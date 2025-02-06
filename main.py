@@ -39,7 +39,7 @@ class NotesResponse(BaseModel):
     total: int
 
 
-def get_auth_key() -> str:
+def get_auth_key(isVerify: bool) -> str:
     """
     Logs into the Dnote API using credentials from environment variables
     and returns an authentication key.
@@ -62,7 +62,7 @@ def get_auth_key() -> str:
     }
 
     try:
-        response = requests.post(url, json=payload, headers=headers, verify=True)
+        response = requests.post(url, json=payload, headers=headers, verify=isVerify)
         response.raise_for_status()  # Raise exception for HTTP errors
         return response.json().get("key")  # Extract authentication key
     except requests.exceptions.RequestException as e:
@@ -70,7 +70,7 @@ def get_auth_key() -> str:
         return ""
 
 
-def fetch_notes(auth_key: str) -> NotesResponse:
+def fetch_notes(auth_key: str, isVerify: bool) -> NotesResponse:
     """
     Fetch notes from the Dnote API and return a NotesResponse object.
 
@@ -87,7 +87,7 @@ def fetch_notes(auth_key: str) -> NotesResponse:
     }
 
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, verify=isVerify)
         response.raise_for_status()  # Raise an exception for HTTP errors
         return NotesResponse.model_validate(response.json())
 
@@ -181,7 +181,10 @@ def print_section(title, notes, note_width):
         console.print(table)
 
 if __name__ == "__main__":
-    notes_response = fetch_notes(get_auth_key())
+
+    isVerify = eval(os.getenv("DNOTE_VERIFY"))
+    token = get_auth_key(isVerify)
+    notes_response = fetch_notes(token, isVerify)
 
     if notes_response.total == 0:
         print("⚠️ No notes found. This could be due to:")
