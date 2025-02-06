@@ -182,7 +182,9 @@ def print_section(title, notes, note_width):
 
 if __name__ == "__main__":
 
-    isVerify = eval(os.getenv("DNOTE_VERIFY"))
+    verify_string = os.getenv("DNOTE_VERIFY")
+    isVerify = True if verify_string == "True" else False
+
     token = get_auth_key(isVerify)
     notes_response = fetch_notes(token, isVerify)
 
